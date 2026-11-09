@@ -58,9 +58,13 @@ await scrape({
 Puppeteer plugin constructor accepts the following params:
 * `launchOptions` - *(optional)* - puppeteer launch options, can be found in [puppeteer docs](https://pptr.dev/api/puppeteer.launchoptions)
 * `gotoOptions` - *(optional)* - puppeteer page.goto options, can be found in [puppeteer docs](https://pptr.dev/api/puppeteer.gotooptions)
-* `scrollToBottom` - *(optional)* - in some cases, the page needs to be scrolled down to render its assets (lazyloading). Because some pages can be really endless, the scrolldown process can be interrupted before reaching the bottom when one or both of the limitations below are reached:
-    * `timeout` - in milliseconds
-    * `viewportN` - viewport height multiplier
+* `scrollToBottom` - *(optional)* - in some cases, the page needs to be scrolled down to render its assets (lazyloading). The page is scrolled step by step; after each step it waits for the page height to stop changing for several checks in a row before considering the bottom reached (so content that loads asynchronously after a scroll event has time to land), and the process is interrupted early if any of the limits below is reached:
+    * `timeout` - overall time budget, in milliseconds
+    * `viewportN` - viewport height multiplier; scrolling stops once this many viewport heights have been scrolled
+    * `maxScrolls` - *(optional, default `100`)* - hard cap on the number of scroll steps, independent of `timeout`, so a page whose content never stops growing can't stall the scrape indefinitely
+    * `stableRounds` - *(optional, default `3`)* - number of consecutive checks where the page height must stay the same before scrolling is considered done
+    * `checkDelay` - *(optional, default `300`)* - milliseconds to wait after each scroll step before re-reading the page height, to give lazy-loaded content time to arrive and render
+    * `containerSelector` - *(optional)* - CSS selector of a scrollable element to scroll instead of the whole page (e.g. an infinite-scroll `<div>`)
 * `exclusiveRendering` - *(optional, default `true`)* - render pages one at a time and never while other requests are in flight, so cookies rotated by a page (see [Cookies](#cookies)) are never presented stale. Set to `false` for websites which don't rotate cookies: pages are then rendered concurrently, which is considerably faster on large websites.
 
 ## Cookies

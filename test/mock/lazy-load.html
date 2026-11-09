@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Lazy load test</title>
+	<style>
+		#filler { height: 500px; }
+		#list div { height: 100px; }
+	</style>
+</head>
+<body>
+
+<div id="filler"></div>
+<div id="list"></div>
+
+<script>
+	// Simulates an infinite-scroll feed: each scroll near the bottom appends
+	// one more batch after a network-like delay, so the page keeps growing
+	// in several waves instead of all at once on load.
+	window.itemsAdded = 0;
+	var maxItems = 5;
+	var list = document.getElementById('list');
+
+	function addItem () {
+		var div = document.createElement('div');
+		div.className = 'lazy-item';
+		div.textContent = 'lazy item ' + window.itemsAdded;
+		list.appendChild(div);
+		window.itemsAdded++;
+	}
+
+	function maybeLoadMore () {
+		if (window.itemsAdded >= maxItems) {
+			return;
+		}
+		var scrollable = document.scrollingElement || document.documentElement;
+		var nearBottom = scrollable.scrollTop + window.innerHeight >= scrollable.scrollHeight - 300;
+		if (nearBottom) {
+			setTimeout(addItem, 250);
+		}
+	}
+
+	window.addEventListener('scroll', maybeLoadMore);
+	addItem();
+</script>
+
+</body>
+</html>
